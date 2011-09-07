@@ -63,9 +63,7 @@ class SpatiaLiteOperations(DatabaseOperations, BaseSpatialOperations):
     difference = 'Difference'
     distance = 'Distance'
     envelope = 'Envelope'
-    gml = 'AsGML'
     intersection = 'Intersection'
-    kml = 'AsKML'
     length = 'GLength' # OpenGis defines Length, but this conflicts with an SQLite reserved keyword
     num_geom = 'NumGeometries'
     num_points = 'NumPoints'
@@ -134,6 +132,11 @@ class SpatiaLiteOperations(DatabaseOperations, BaseSpatialOperations):
         gis_terms = ['isnull']
         gis_terms += self.geometry_functions.keys()
         self.gis_terms = dict([(term, None) for term in gis_terms])
+
+        # Spatialite 2.4.0-RC4 added AsGML and AsKML
+        if version >= (2, 4, 0):
+            self.gml = 'AsGML'
+            self.kml = 'AsKML'
 
     def check_aggregate_support(self, aggregate):
         """

@@ -93,7 +93,7 @@ class GeoModelTest(TestCase):
     def test03a_kml(self):
         "Testing KML output from the database using GeoQuerySet.kml()."
         # Only PostGIS and Spatialite support KML serialization
-        if not (postgis or spatialite):
+        if not (postgis or (spatialite and connection.ops.spatial_version >= (2, 4, 0))):
             self.assertRaises(NotImplementedError, State.objects.all().kml, field_name='poly')
             return
 
@@ -131,12 +131,15 @@ class GeoModelTest(TestCase):
         if oracle:
             # No precision parameter for Oracle :-/
             gml_regex = re.compile(r'^<gml:Point srsName="SDO:4326" xmlns:gml="http://www.opengis.net/gml"><gml:coordinates decimal="\." cs="," ts=" ">-104.60925\d+,38.25500\d+ </gml:coordinates></gml:Point>')
-            for ptown in [ptown1, ptown2]:
-                self.assertTrue(gml_regex.match(ptown.gml))
+        elif spatialite:
+            # Spatialite has extra colon in SrsName
+            gml_regex = re.compile(r'^<gml:Point SrsName="EPSG::4326"><gml:coordinates decimal="\." cs="," ts=" ">-104.609251\d+,38.255001</gml:coordinates></gml:Point>')
         else:
             gml_regex = re.compile(r'^<gml:Point srsName="EPSG:4326"><gml:coordinates>-104\.60925\d+,38\.255001</gml:coordinates></gml:Point>')
-            for ptown in [ptown1, ptown2]:
-                self.assertTrue(gml_regex.match(ptown.gml))
+
+        for ptown in [ptown1, ptown2]:
+            self.assertTrue(gml_regex.match(ptown.gml))
+
 
     def test03c_geojson(self):
         "Testing GeoJSON output from the database using GeoQuerySet.geojson()."
