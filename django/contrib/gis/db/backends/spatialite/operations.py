@@ -63,7 +63,9 @@ class SpatiaLiteOperations(DatabaseOperations, BaseSpatialOperations):
     difference = 'Difference'
     distance = 'Distance'
     envelope = 'Envelope'
+    gml = 'AsGML'
     intersection = 'Intersection'
+    kml = 'AsKML'
     length = 'GLength' # OpenGis defines Length, but this conflicts with an SQLite reserved keyword
     num_geom = 'NumGeometries'
     num_points = 'NumPoints'

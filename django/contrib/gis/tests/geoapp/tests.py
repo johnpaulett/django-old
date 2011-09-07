@@ -92,8 +92,8 @@ class GeoModelTest(TestCase):
 
     def test03a_kml(self):
         "Testing KML output from the database using GeoQuerySet.kml()."
-        # Only PostGIS supports KML serialization
-        if not postgis:
+        # Only PostGIS and Spatialite support KML serialization
+        if not postgis or spatialite:
             self.assertRaises(NotImplementedError, State.objects.all().kml, field_name='poly')
             return
 
@@ -117,7 +117,7 @@ class GeoModelTest(TestCase):
 
     def test03b_gml(self):
         "Testing GML output from the database using GeoQuerySet.gml()."
-        if mysql or spatialite:
+        if mysql:
             self.assertRaises(NotImplementedError, Country.objects.all().gml, field_name='mpoly')
             return
 
