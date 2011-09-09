@@ -1,10 +1,11 @@
 import re
 from django.db import connection
+from django.db.utils import DatabaseError
 from django.contrib.gis import gdal
 from django.contrib.gis.geos import (fromstr, GEOSGeometry,
     Point, LineString, LinearRing, Polygon, GeometryCollection)
 from django.contrib.gis.tests.utils import (
-    no_mysql, no_oracle, no_spatialite,
+    no_mysql, no_oracle, no_postgis, no_spatialite,
     mysql, oracle, postgis, spatialite)
 from django.test import TestCase
 
@@ -92,8 +93,8 @@ class GeoModelTest(TestCase):
 
     def test03a_kml(self):
         "Testing KML output from the database using GeoQuerySet.kml()."
-        # Only PostGIS and Spatialite support KML serialization
-        if not (postgis or (spatialite and connection.ops.spatial_version >= (2, 4, 0))):
+        # Only PostGIS and Spatialite (>=2.4.0-RC4) support KML serialization
+        if not (postgis or (spatialite and connection.ops.kml)):
             self.assertRaises(NotImplementedError, State.objects.all().kml, field_name='poly')
             return
 
@@ -117,7 +118,7 @@ class GeoModelTest(TestCase):
 
     def test03b_gml(self):
         "Testing GML output from the database using GeoQuerySet.gml()."
-        if mysql:
+        if mysql or (spatialite and not connection.ops.gml) :
             self.assertRaises(NotImplementedError, Country.objects.all().gml, field_name='mpoly')
             return
 
@@ -731,6 +732,26 @@ class GeoModelTest(TestCase):
         h2 = City.objects.geohash(precision=5).get(name='Houston')
         self.assertEqual(ref_hash, h1.geohash)
         self.assertEqual(ref_hash[:5], h2.geohash)
+
+    @no_mysql
+    @no_oracle
+    @no_postgis
+    def test30_spatialite_gml_and_kml(self):
+        # ensure kml and gml exist for spatialite >= 2.4.0-RC4
+        def supports_gml():
+            try:
+                connection.ops. _get_spatialite_func("AsGML(GeomFromText('POINT(1 1)'))")
+                return True
+            except DatabaseError:
+                return False
+
+        if connection.ops.spatial_version >= (2, 4, 0) and supports_gml():
+            self.assertTrue(connection.ops.gml)
+            self.assertTrue(connection.ops.kml)
+        else:
+            self.assertFalse(connection.ops.gml)
+            self.assertFalse(connection.ops.kml)
+
 
 from test_feeds import GeoFeedTest
 from test_regress import GeoRegressionTests
