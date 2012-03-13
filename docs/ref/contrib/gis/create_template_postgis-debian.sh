@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PLPGSQL = 1
+
 # For Ubuntu 8.x and 9.x releases.
 if [ -d "/usr/share/postgresql-8.3-postgis" ]
 then
@@ -24,8 +26,19 @@ else
     GEOGRAPHY=0
 fi
 
+# For Ubuntu 11.10 (with PostGIS 1.5)
+if [ -d "/usr/share/postgresql/9.1/contrib/postgis-1.5" ]
+then
+    POSTGIS_SQL_PATH=/usr/share/postgresql/9.1/contrib/postgis-1.5
+    POSTGIS_SQL=postgis.sql
+    GEOGRAPHY=1
+    # plpgsql installed by default in 11.10
+    PLPGSQL=0
+fi
+
 createdb -E UTF8 template_postgis && \
 createlang -d template_postgis plpgsql && \
+if ((PLPGSQL)); then createlang -d template_postgis plpgsql; fi && \
 psql -d postgres -c "UPDATE pg_database SET datistemplate='true' WHERE datname='template_postgis';" && \
 psql -d template_postgis -f $POSTGIS_SQL_PATH/$POSTGIS_SQL && \
 psql -d template_postgis -f $POSTGIS_SQL_PATH/spatial_ref_sys.sql && \
