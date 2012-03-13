@@ -952,12 +952,21 @@ Ubuntu & Debian GNU/Linux
 Ubuntu
 ^^^^^^
 
+11.10
+~~~~~
+
+In Ubuntu 11.104 PostgreSQL was upgraded to 9.1.  The installation commands are::
+
+    $ sudo apt-get install binutils gdal-bin libproj-dev postgresql-9.1-postgis \
+         postgresql-server-dev-9.1 python-psycopg2
+
+
 .. _ubuntu10:
 
-10.04 and 10.10
-~~~~~~~~~~~~~~~
+10.04 thru 11.04
+~~~~~~~~~~~~~~~~
 
-In Ubuntu 10 PostgreSQL was upgraded to 8.4 and GDAL was upgraded to 1.6.
+In Ubuntu 10.04 PostgreSQL was upgraded to 8.4 and GDAL was upgraded to 1.6.
 Ubuntu 10.04 uses PostGIS 1.4, while Ubuntu 10.10 uses PostGIS 1.5 (with
 geography support).  The installation commands are::
 
